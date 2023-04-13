@@ -30,10 +30,10 @@ start:
     
     call GLCD_refresh
     
-    call Snake_init
+    call Snake_init ; initialise snake (of length 3)
     movlw 0x00
     movwf mover, A
-    call getApple
+    call getApple ;generates the first apple
    
     
 
@@ -48,24 +48,24 @@ keyBoardStart:
 
 
 gameLoop:
-    call bigDelay
-    call Snake_move
-    call collisionStart
-    call AppleCheck
-    bra gameLoop
+    call bigDelay; Delay function (also incorporates keyboard polling)
+    call Snake_move ;Moves snake (and collisions with wall)
+    call collisionStart ; Collisions with self
+    call AppleCheck ; Checks for collisions with wall
+    bra gameLoop ;keep moving
     
     
 endgame:
-    call GLCD_ON
-    call bigDelay
+    call GLCD_ON ;pulses screen
+    call bigDelay ; delay
     call bigDelay
     call bigDelay
     call bigDelay
     call bigDelay
 
-    goto start
+    goto start; restarts
 
-bigDelay:
+bigDelay: ;nested delays and counter init
     movlw 0xFF
     movwf d1cont, A
     movlw 0xFF
@@ -75,18 +75,18 @@ bigDelay:
     call delay3
     return
     
-delay1:
+delay1:; simple delay
     decfsz d1cont, A
     bra delay1
     return
     
 delay2:
-    call keyboardRead
+    call keyboardRead ; polling keyboard
     decfsz d2cont, A
     bra delay2
     return
 
-delay3:
+delay3:; simple delay
     call delay2
     decfsz d3cont, A
     bra delay3

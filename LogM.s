@@ -130,7 +130,7 @@ LCG_yinit:
     movlw   0x08
     movwf   coefm2, A
     
-Apple_display:
+Apple_display:;function which generates random numbers and displays a new apple
     
     call    LCG_generator
     movff seed, tempY
@@ -149,7 +149,7 @@ Snake_move:
   
     ; Call function which converts user signal into one of the 4 values given above
     ; Put value into 'mover'
-    
+    ;Below are essentially a number of if statements
     
     ; Check the value of mover and call move_snake subroutine
     movlw   up        ; Load up value to W register
@@ -189,7 +189,7 @@ do_pause:
     movlw   right     ; Load pause value to W register
     xorwf   mover, W, A  ; Compare W with mover
     btfsc   STATUS, 2, A ; Skip next instruction if W and mover are not equal
-    bra do_pause
+    bra do_pause ;remain paused unless pause is pressed
     bra Snake_move
     
 collisionStart:
@@ -200,56 +200,56 @@ collisionStart:
     incf cursor, A
     incf cursor, A ;increase for testing
     
-horzCheck:
-    movff   cursor, FSR0, A
-    movf    INDF0, W ; Load down value to W register
-    xorwf   snake, W, A  ; Compare W with snake
-    btfsc   STATUS, 2 , A; Skip next instruction if W and mover are not equal
-    call    vertCheck  ; Call move_neg subroutine
+horzCheck: ;Horizontal Collisions checks
+    movff   cursor, FSR0, A ;cursor is a memory address containing a memory address of a snake segment
+    movf    INDF0, W ; Indirectly address cursor and load in the position of snake segment to W
+    xorwf   snake, W, A  ; Compare W with Head's horizontal co-ordinate
+    btfsc   STATUS, 2 , A; If not equal no need to check with vertical co-ordinate
+    call    vertCheck  ; 
     
+    incf cursor, A ;Move to next horizontal address (+2) 
     incf cursor, A
-    incf cursor, A
-    incf collCounter, A
+    incf collCounter, A ;Snake size is 2*length so (collision) counter must be incremented twice
     incf collCounter, A
     movf collCounter, W, A
-    cpfslt snake_size, A
-    bra horzCheck
+    cpfslt snake_size, A ;skip when have counter is equal to snake size
+    bra horzCheck;loop back
     return
     
-vertCheck:
-    incf    cursor, A
+vertCheck:;Check for vertical co-ordinate == head vertical coordinate
+    incf    cursor, A ;increment for vertical co-ord
     movff   cursor, FSR0, A
-    movf    INDF0, W ; Load down value to W register
-    xorwf   snake+1, W, A  ; Compare W with snake
-    btfsc   STATUS, 2 , A; Skip next instruction if W and mover are not equal
-    goto    endgame  ; Call move_neg subroutine
-    decf    cursor, A
+    movf    INDF0, W ; indirectly address cursor
+    xorwf   snake+1, W, A 
+    btfsc   STATUS, 2 , A
+    goto    endgame  ; End game if co-ordinate are equal => collision
+    decf    cursor, A ;decrement cursror for horizontal checks
     return
     
-AppleCheck:
+AppleCheck: ;check for apple collisions (very similar to prior collision checks)
     movf    seed, W, A
-    andlw   00001111B
+    andlw   00001111B ; horz co-ord is limited to 0-15
     movwf   appleHorz, A
     movf    snake, W, A	    ; movf for moving VALUE IN SNAKE memory
-    cpfseq  appleHorz, A; check if the head x is equal to apple x
+    cpfseq  appleHorz, A; check is equal, if not, no need for vertical checks
     return
     movf    seed2, W, A
-    andlw   00000111B
+    andlw   00000111B; vert co-ord is limited to 0-7
     movwf   appleVert, A
     movf    snake+1, W, A
-    cpfseq  appleVert, A	    ; check if the head y is equal to apple y
-    return
-addTail:
+    cpfseq  appleVert, A; skip if equal and move to addTai
+    return; return if not equal
+addTail: ;if head collides with apple addTail
     incf snake_size, A
-    incf snake_size, A 
-    call cursorToTail   
-    movff cursor, FSR0, A
-    movff INDF0, tempY
+    incf snake_size, A ;snake_size is 2*length so increment twice
+    call cursorToTail   ;get new Tail into cursor (using incremented snake_size!)
+    movff cursor, FSR0, ;Load into fsr0 for indirect addressing
+    movff INDF0, tempY ;load address stored in cursor to tempY
     incf cursor, A
     movff cursor, FSR0, A
-    movff INDF0, tempX
-    call GLCD_lightPix
-    call Apple_display
+    movff INDF0, tempX ;same for tempX
+    call GLCD_lightPix ;light new tail pixel
+    call Apple_display ; generate new apple
     return
     
     

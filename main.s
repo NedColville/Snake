@@ -1,8 +1,8 @@
 #include <xc.inc>
 
-extrn	GLCD_refresh, GLCD_display_on, GLCD_initialize, collisionStart, AppleCheck
-extrn Snake_init, keyboardRead, mover ,getApple, Snake_move, GLCD_ON
-global tempX, tempY, snake_size, start, endgame
+extrn	GLCD_refresh, GLCD_display_on, GLCD_initialize, collisionStart, AppleCheck, getDifficulty
+extrn Snake_init, keyboardGame, mover ,getApple, Snake_move, GLCD_All_On, diffRead, keyboardDiff
+global tempX, tempY, snake_size, rst, endgame, difficulty
 psect	udata_acs
 	tempX: ds 1
 	tempY: ds 1
@@ -10,6 +10,7 @@ psect	udata_acs
 	d2cont: ds 1
 	d3cont: ds 1
         snake_size:	ds 1
+	difficulty: ds 1
 	
 psect	code, abs
 rst:
@@ -30,16 +31,18 @@ start:
     
     call GLCD_refresh
     
-    call Snake_init ; initialise snake (of length 3)
+    call Snake_init
     movlw 0x00
     movwf mover, A
-    call getApple ;generates the first apple
+    call getApple
+    call getDifficulty
    
     
 
+
     
 keyBoardStart:
-    call keyboardRead
+    call keyboardGame
     tstfsz mover, A
     bra gameLoop
     bra keyBoardStart
@@ -48,48 +51,49 @@ keyBoardStart:
 
 
 gameLoop:
-    call bigDelay; Delay function (also incorporates keyboard polling)
-    call Snake_move ;Moves snake (and collisions with wall)
-    call collisionStart ; Collisions with self
-    call AppleCheck ; Checks for collisions with wall
-    bra gameLoop ;keep moving
+    call bigDelay
+    call Snake_move
+    call collisionStart
+    call AppleCheck
+    bra gameLoop
     
     
 endgame:
-    call GLCD_ON ;pulses screen
-    call bigDelay ; delay
+    call GLCD_All_On
+    call bigDelay
     call bigDelay
     call bigDelay
     call bigDelay
     call bigDelay
 
-    goto start; restarts
+    goto start
+    
 
-bigDelay: ;nested delays and counter init
+bigDelay:
     movlw 0xFF
     movwf d1cont, A
     movlw 0xFF
     movwf d2cont, A
-    movlw 0x20
+    movf difficulty,W, A
     movwf d3cont, A
     call delay3
     return
     
-delay1:; simple delay
+delay1:
     decfsz d1cont, A
     bra delay1
     return
     
 delay2:
-    call keyboardRead ; polling keyboard
+    call keyboardGame
     decfsz d2cont, A
     bra delay2
     return
 
-delay3:; simple delay
+delay3:
     call delay2
     decfsz d3cont, A
     bra delay3
     return
-    
+   
     end rst

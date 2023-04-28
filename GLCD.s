@@ -1,5 +1,6 @@
 #include <xc.inc>
-global GLCD_refresh,GLCD_display_on, GLCD_initialize, GLCD_lightPix, XYConv, GLCD_clearPix, GLCD_ON
+global GLCD_refresh,GLCD_display_on, GLCD_initialize, GLCD_lightPix
+global XYConv, GLCD_clearPix, GLCD_All_On, GLCD_lightApple
 extrn tempY, tempX
     
 
@@ -82,7 +83,7 @@ Write_half_h:
     bra Write_half_h
     return
     
-GLCD_ON:
+GLCD_All_On:
     call GLCD_pickPageB
     movlw 0x00
     call GLCD_sety
@@ -113,7 +114,7 @@ Write_half_h2:
     movlw 0x3f
     andwf Y_addr, F, A
     tstfsz Y_addr, A
-    bra Write_half_h
+    bra Write_half_h2
     return   
     
 
@@ -268,7 +269,24 @@ XYConv: ;Takes XY value from W drive and moves cursor to that position
 
 
 
-
+GLCD_lightApple:
+    movlw 0xFF
+    call GLCD_write_data
+    movlw 0xFF
+    call GLCD_write_data
+    movlw 0xC3
+    call GLCD_write_data
+    movlw 0xC3
+    call GLCD_write_data
+    movlw 0xC3
+    call GLCD_write_data
+    movlw 0xC3
+    call GLCD_write_data
+    movlw 0xFF
+    call GLCD_write_data
+    movlw 0xFF
+    call GLCD_write_data
+    return
 
 
 delay: ;delay for 250ns*val in

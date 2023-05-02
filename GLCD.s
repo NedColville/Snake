@@ -24,19 +24,17 @@ EN equ 4
 RST equ 5
  
 psect glcd, class=CODE
-
+;File containing all GLCD functions
 ;org 0x500
 
-;In the original file, jumping to send_I, send_D, GLCD_output are very confusing. 
-;Hard to figure out where the function which calls send_i and send_D reaches return instruction.
 
     
 
-GLCD_initialize:
+GLCD_initialize: ;sets ctrl as an input and clears data bus
     clrf  TRISB, A ; CTRL lines
     clrf  LATB, A  ; data bus
     
-GLCD_reset:
+GLCD_reset: ;sets reset pin
     bcf LATB, RST, A; reset
     nop
     nop
@@ -46,7 +44,7 @@ GLCD_reset:
     return
     
 ;============
-GLCD_refresh:
+GLCD_refresh: ;function which writes 0s to the entire GLCD
 ;------------   
     call GLCD_pickPageB
     movlw 0x00
@@ -74,7 +72,7 @@ Write_h:
     return
     
 Write_half_h:
-    movlw 0x0 ; data should be specified by a FSR register
+    movlw 0x0 
     call GLCD_write_data
     incf Y_addr, F, A
     movlw 0x3f
@@ -83,7 +81,7 @@ Write_half_h:
     bra Write_half_h
     return
     
-GLCD_All_On:
+GLCD_All_On: ;function which writes all 1s to the GLCD
     call GLCD_pickPageB
     movlw 0x00
     call GLCD_sety
@@ -108,7 +106,7 @@ Write_h2:
     call Write_half_h2
     return
 Write_half_h2:
-    movlw 0xFF ; data should be specified by a FSR register
+    movlw 0xFF
     call GLCD_write_data
     incf Y_addr, F, A
     movlw 0x3f
@@ -120,7 +118,7 @@ Write_half_h2:
 
     
 
-GLCD_pickPageL:
+GLCD_pickPageL: ;functions setting chip select pins to pick a page
     bcf LATB, CS1, A ;CS0=0
     bsf LATB, CS2, A ;CS1=1
     return
@@ -220,8 +218,8 @@ read_cycle:
     call GLCD_pickPageL
     return
 
-GLCD_lightPix:
-    movlw 00001000B
+GLCD_lightPix: ;function to be called which write 1s to 8 lines in a row, lighting an 8x8 'pixel of pixels'
+    movlw 00001000B ;want to stop at 9
     movwf reg8, A
     call pixLoopLight
     return
@@ -231,7 +229,7 @@ pixLoopLight:
     decfsz reg8, A
     bra pixLoopLight
     return
-GLCD_clearPix:
+GLCD_clearPix: ;function to be called which writes 0s to 8 lines in a row
     movlw 00001000B
     movwf reg8, A
     call pixLoopClear
@@ -269,7 +267,7 @@ XYConv: ;Takes XY value from W drive and moves cursor to that position
 
 
 
-GLCD_lightApple:
+GLCD_lightApple: ;special pixel art for the apples
     movlw 0xFF
     call GLCD_write_data
     movlw 0xFF

@@ -3,7 +3,7 @@ extrn keyboardDiff, diffRead, difficulty
 global getDifficulty
     
 psect diffCode, class=CODE
-    
+ ;Function essentially comprising of a keyboard read and a few skip if not equal to statements in order to load the correct value into difficulty
 getDifficulty:
     call keyboardDiff
     movlw 0x00
@@ -12,26 +12,26 @@ getDifficulty:
     bra getDifficulty
 setDifficulty:
     movf diffRead, W, A
-    xorlw   0xE7 ; Compare W (up) with mover - sets W = 0 if equal, 1 o.w.
-    btfsc   STATUS, 2, A ; Skip next instruction if W = 1
+    xorlw   0xE7 ; Skip if measurement not equal to 0xE7, the value associated with the 1 button
+    btfsc   STATUS, 2, A ; 
     call diff1
     
     movf diffRead, W, A
-    xorlw   0xD7 ; Compare W (up) with mover - sets W = 0 if equal, 1 o.w.
-    btfsc   STATUS, 2, A ; Skip next instruction if W = 1
+    xorlw   0xD7 ; 
+    btfsc   STATUS, 2, A ; 
     call diff2
     
     movf diffRead, W, A
-    xorlw   0xB7 ; Compare W (up) with mover - sets W = 0 if equal, 1 o.w.
-    btfsc   STATUS, 2, A ; Skip next instruction if W = 1
+    xorlw   0xB7 ;
+    btfsc   STATUS, 2, A ;
     call diff3
        
     movf diffRead, W, A
-    xorlw   0x77 ; Compare W (up) with mover - sets W = 0 if equal, 1 o.w.
-    btfsc   STATUS, 2, A ; Skip next instruction if W = 1
+    xorlw   0x77 ; 
+    btfsc   STATUS, 2, A ; 
     call diff4
     return
-diff1:
+diff1: ;loads a high value into difficulty s.t. the delay takes longer.
     movlw 0x80
     movwf difficulty, A
     return

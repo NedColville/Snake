@@ -13,7 +13,7 @@ psect udata_acs
  diffRead: ds 1
 psect keyboard, class=CODE
 ;org 0x300
-keyboardRead:
+keyboardRead:;function for reading off the keyboard
     movff mover, outputTemp ;temporarily store previous output
     banksel PADCFG1
     bsf REPU
@@ -59,76 +59,78 @@ keyboardRead:
     movlw 0x0
     movwf validCheck, A
     movf portTot, W, A
-    xorlw   up  ; Compare W (up) with mover - sets W = 0 if equal, 1 o.w.
-    btfsc   STATUS, 2, A ; Skip next instruction if W = 1
+    xorlw   up  ;Below are bits of code similar to this - these are essentially skip if not equal to statements
+    btfsc   STATUS, 2, A ; We load the measured value and if it matches a valid value (up in this case) we increase the valid checker
     incf validCheck, A
     
     movf portTot, W, A
-    xorlw   down  ; Compare W (up) with mover - sets W = 0 if equal, 1 o.w.
-    btfsc   STATUS, 2, A ; Skip next instruction if W = 1
+    xorlw   down  ; Same as before
+    btfsc   STATUS, 2, A ; 
     incf validCheck, A
     
     movf portTot, W, A
-    xorlw   left  ; Compare W (up) with mover - sets W = 0 if equal, 1 o.w.
-    btfsc   STATUS, 2, A ; Skip next instruction if W = 1
+    xorlw   left  ; 
+    btfsc   STATUS, 2, A ; 
     incf validCheck, A
     
     movf portTot, W, A
-    xorlw   right ; Compare W (up) with mover - sets W = 0 if equal, 1 o.w.
-    btfsc   STATUS, 2, A ; Skip next instruction if W = 1
+    xorlw   right ;
+    btfsc   STATUS, 2, A ;
     incf validCheck, A
     
     movf portTot, W, A
-    xorlw   pause  ; Compare W (up) with mover - sets W = 0 if equal, 1 o.w.
-    btfsc   STATUS, 2, A ; Skip next instruction if W = 1
+    xorlw   pause  ; 
+    btfsc   STATUS, 2, A ; 
     incf validCheck, A
     
     movf portTot, W, A
-    xorlw   restart  ; Compare W (up) with mover - sets W = 0 if equal, 1 o.w.
-    btfsc   STATUS, 2, A ; Skip next instruction if W = 1
+    xorlw   restart  ; 
+    btfsc   STATUS, 2, A ; 
     incf validCheck, A
     
     movff portTot, mover, A
     movf validCheck, W, A
-    xorlw   0x00  ; Compare W (up) with mover - sets W = 0 if equal, 1 o.w.
-    btfsc   STATUS, 2, A ; Skip next instruction if W = 1
-    movff outputTemp, mover, A
+    xorlw   0x00  ; This is another skip if not equal to - however we are skipping if valid check is not equal to zero
+    ;i.e. skipping if a valid entry has been entered and has been subsequently incremented
+    btfsc   STATUS, 2, A ; 
+    movff outputTemp, mover, A ;if validCheck has not been incremented we have received an invalid input - meaning we take the value from the last cycle
     
     
     
     
     return
-keyboardDiff:
+keyboardDiff: ;exactly the same function containing validity checks but for the difficulty selection
     call keyboardRead
-    ;INPUT SANITISATION - Invalid inputs arise from 
+    ;INPUT SANITISATION - Invalid inputs arise from key bouncing
     ;Need to reject an input and take previous one if invalid input (such as no press)
+
     
     movlw 0x0
     movwf validCheck, A
     movf portTot, W, A
-    xorlw   0xE7  ; Compare W (up) with mover - sets W = 0 if equal, 1 o.w.
-    btfsc   STATUS, 2, A ; Skip next instruction if W = 1
+    xorlw   0xE7  ;
+    btfsc   STATUS, 2, A ; 
     incf validCheck, A
     
     movf portTot, W, A
-    xorlw   0xD7  ; Compare W (up) with mover - sets W = 0 if equal, 1 o.w.
-    btfsc   STATUS, 2, A ; Skip next instruction if W = 1
+    xorlw   0xD7  ; 
+    btfsc   STATUS, 2, A ; 
     incf validCheck, A
     
     movf portTot, W, A
-    xorlw   0xB7  ; Compare W (up) with mover - sets W = 0 if equal, 1 o.w.
-    btfsc   STATUS, 2, A ; Skip next instruction if W = 1
+    xorlw   0xB7  ; 
+    btfsc   STATUS, 2, A ; 
     incf validCheck, A
     
     movf portTot, W, A
-    xorlw   0x77 ; Compare W (up) with mover - sets W = 0 if equal, 1 o.w.
-    btfsc   STATUS, 2, A ; Skip next instruction if W = 1
+    xorlw   0x77 ; 
+    btfsc   STATUS, 2, A ;
     incf validCheck, A
     
     movff portTot, diffRead, A
     movf validCheck, W, A
-    xorlw   0x00  ; Compare W (up) with mover - sets W = 0 if equal, 1 o.w.
-    btfsc   STATUS, 2, A ; Skip next instruction if W = 1
+    xorlw   0x00  ; 
+    btfsc   STATUS, 2, A ; 
     call invalidDiff   
     
     

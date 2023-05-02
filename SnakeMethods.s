@@ -147,7 +147,7 @@ Apple_display:
     
 Snake_move:   
   
-    ; Call function which converts user signal into one of the 4 values given above
+    ; Call function which converts user signal into one of the 7 values given above
     ; Put value into 'mover'
     
     
@@ -200,56 +200,56 @@ collisionStart:
     incf cursor, A
     incf cursor, A ;increase for testing
     
-horzCheck:
-    movff   cursor, FSR0, A
-    movf    INDF0, W ; Load down value to W register
-    xorwf   snake, W, A  ; Compare W with snake
-    btfsc   STATUS, 2 , A; Skip next instruction if W and mover are not equal
-    call    vertCheck  ; Call move_neg subroutine
+horzCheck:;Horizontal Collision checks
+    movff   cursor, FSR0, A;cursor is a memory address containing a memory address of a snake segment
+    movf    INDF0, W ; Indirectly address cursor and load in the position of snake segment to W
+    xorwf   snake, W, A  ; Compare W with Head's horizontal co-ord
+    btfsc   STATUS, 2 , A; If not equal no need to check with vertical co-ord
+    call    vertCheck  ; 
     
+    incf cursor, A ;Move to next horz address (+2)
     incf cursor, A
-    incf cursor, A
-    incf collCounter, A
+    incf collCounter, A; Snake size is 2*length so (collision) counter must be incremented twice
     incf collCounter, A
     movf collCounter, W, A
-    cpfslt snake_size, A
+    cpfslt snake_size, A; skip when counter is equal to snake size
     bra horzCheck
     return
     
-vertCheck:
-    incf    cursor, A
+vertCheck:;check for vertical co-ord == head vertical co-ord
+    incf    cursor, A; increment for vertical co-ord
     movff   cursor, FSR0, A
-    movf    INDF0, W ; Load down value to W register
-    xorwf   snake+1, W, A  ; Compare W with snake
-    btfsc   STATUS, 2 , A; Skip next instruction if W and mover are not equal
-    goto    endgame  ; Call move_neg subroutine
-    decf    cursor, A
+    movf    INDF0, W ; Load down value to W register; indirectly address cursor
+    xorwf   snake+1, W, A  ; 
+    btfsc   STATUS, 2 , A; 
+    goto    endgame  ; end game if co-ord are equal => 
+    decf    cursor, A; decrement cursor for horizontal checks
     return
     
-AppleCheck:
+AppleCheck:; check for apple collisions (very similar to prior collision checks)
     movf    seed, W, A
-    andlw   00001111B
+    andlw   00001111B; horz co-ord is limited 0-15
     movwf   appleHorz, A
     movf    snake, W, A	    ; movf for moving VALUE IN SNAKE memory
-    cpfseq  appleHorz, A; check if the head x is equal to apple x
+    cpfseq  appleHorz, A; check if the head x is equal to apple x, if not no need for vertical checks
     return
     movf    seed2, W, A
-    andlw   00000111B
+    andlw   00000111B ;vert co-ord is limited 0-7
     movwf   appleVert, A
     movf    snake+1, W, A
-    cpfseq  appleVert, A	    ; check if the head y is equal to apple y
+    cpfseq  appleVert, A;skip if equal and move to addTail
     return
-addTail:
+addTail: ;if head collides with apple addTail
     incf snake_size, A
-    incf snake_size, A 
-    call cursorToTail   
-    movff cursor, FSR0, A
-    movff INDF0, tempY
+    incf snake_size, A ;snake size is 2*length so increment twice
+    call cursorToTail  ;get new Tail into cursor (using incremented snake_size!) 
+    movff cursor, FSR0, A;load into fsr0 for indirect addressing
+    movff INDF0, tempY;load address stored in cursor to tempY
     incf cursor, A
     movff cursor, FSR0, A
-    movff INDF0, tempX
-    call lightTail
-    call Apple_display
+    movff INDF0, tempX;same for tempX
+    call lightTail;light new tail pixel
+    call Apple_display;generate new apple
     return
     
 

@@ -17,9 +17,9 @@ rst:
     org	0x0
     goto start
     
-org	0x100 ; Main code starts here at address 0x100 -- do not place this inside the program loop.  The code below will be separated from the code above!!!
+org	0x100 ; Main code starts here at address 0x100
 
-start:
+start:;initialisation of the snake loading 3 segments at the given positions
     nop
     movlw 0x06
     movwf snake_size, A
@@ -32,16 +32,16 @@ start:
     call GLCD_refresh
     
     call Snake_init
-    movlw 0x00
+    movlw 0x00;moving 0 into mover to test for invalid input
     movwf mover, A
-    call getApple
+    call getApple;prints the first apple on the screen
     call getDifficulty
    
     
 
 
     
-keyBoardStart:
+keyBoardStart:;loop which only gets broken out of once a valid input is entered
     call keyboardGame
     tstfsz mover, A
     bra gameLoop
@@ -50,15 +50,15 @@ keyBoardStart:
     
 
 
-gameLoop:
-    call bigDelay
+gameLoop:;main game loop
+    call bigDelay;delay and poll keyboard for input
     call Snake_move
     call collisionStart
     call AppleCheck
     bra gameLoop
     
     
-endgame:
+endgame:;function to pulse the screen all on once a collision occurs and restarts
     call GLCD_All_On
     call bigDelay
     call bigDelay
@@ -69,7 +69,7 @@ endgame:
     goto start
     
 
-bigDelay:
+bigDelay:;nested delay functions containing keyboard polling
     movlw 0xFF
     movwf d1cont, A
     movlw 0xFF

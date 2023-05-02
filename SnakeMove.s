@@ -14,15 +14,15 @@ psect udata_acs
 psect SnakeMove, class=CODE
 
 ;org	0x500
-
+;All functions below are very similar for respective movements of the snake. Comments for move_down can be applied to the rest
 move_down:
-    call clearTail
+    call clearTail;remove tail before moving
     call preMove
-    incf snake+1, A
+    incf snake+1, A;increase vertical co-ord of head for down movement
     movlw 00001000B
-    cpfslt snake+1, A
-    goto endgame 
-    call writeHead
+    cpfslt snake+1, A; compare if new vertical co-ord of head is located past the wall
+    goto endgame ;if so - end the game
+    call writeHead;if not - write this new pixel
     return
  
 move_up:
@@ -53,7 +53,7 @@ move_left:
     goto endgame
     call writeHead
     return
-cursorToTail:
+cursorToTail:;useful little function which loads the address of the tail into cursor
     movff snake_size, cursor
     movlw snake
     addwf cursor, A
@@ -61,7 +61,8 @@ cursorToTail:
     decf cursor, A
     return
 
-preMove:
+preMove:;main function for changing VALUES of the body of the snake in memory
+    ;initialising variables before main operations
     movff snake_size, length_counter
     call cursorToTail
     incf cursor, A
@@ -72,21 +73,21 @@ preMove:
     
 moveLoop:
     decf cursor, A
-    decf cursor, A
-    movff cursor, tempCursor
+    decf cursor, A; decrease cursor to previous horz address
+    movff cursor, tempCursorlmove to temporary cursor variable
+    decf tempCursor, A;decrease to previous horz address
     decf tempCursor, A
-    decf tempCursor, A
-    movff tempCursor, FSR0
-    movf INDF0, W, A
-    movff cursor, FSR0
-    movwf INDF0, A
+    movff tempCursor, FSR0;load into fsr0 for indirect addressing
+    movf INDF0, W, A;load horz co-ord stored in the addres stored in tempcursor
+    movff cursor, FSR0;move cursor to fsr0
+    movwf INDF0, A;move w reg to [cursor]
     decf length_counter, A
     
-    incf cursor, A
-    movff cursor, tempCursor
+    incf cursor, A;increase cursor once to access vertical co-ords
+    movff cursor, tempCursor;similar indirect addressing and swapping co-ords as for horz
     decf tempCursor, A
     decf tempCursor, A
-    movff tempCursor, FSR0
+    movff tempCursor, FSR0 
     movf INDF0, W, A
     movff cursor, FSR0
     movwf INDF0, A
@@ -97,7 +98,7 @@ moveLoop:
     
 
     
-clearTail:
+clearTail:;function for pointing cursor to tail and loading co-ords to clear the pixel on glcd
     call cursorToTail
     movff cursor, FSR0, A
     movf INDF0, W, A
@@ -109,7 +110,7 @@ clearTail:
     call  XYConv
     call GLCD_clearPix
     return
-lightTail:
+lightTail:;similar function to light the tail once an apple is eaten
     call cursorToTail
     movff cursor, FSR0, A
     movf INDF0, W, A
@@ -121,7 +122,7 @@ lightTail:
     call  XYConv
     call GLCD_lightPix
     return
-writeHead:
+writeHead:;function which loads xy co-ords of new position of head and lights pixel on GLCD
     movf snake, W, A
     movwf tempY, A
     movf snake+1, W, A

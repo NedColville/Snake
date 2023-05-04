@@ -74,7 +74,7 @@ preMove:;main function for changing VALUES of the body of the snake in memory
 moveLoop:
     decf cursor, A
     decf cursor, A; decrease cursor to previous horz address
-    movff cursor, tempCursorlmove to temporary cursor variable
+    movff cursor, tempCursor;move to temporary cursor variable
     decf tempCursor, A;decrease to previous horz address
     decf tempCursor, A
     movff tempCursor, FSR0;load into fsr0 for indirect addressing
